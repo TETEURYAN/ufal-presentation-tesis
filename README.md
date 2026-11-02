@@ -1,8 +1,22 @@
-# Thesis Defense Presentation (TCC) — UFAL
+<div align="center">
+<h1>Presentation for Extraction and longitudinal
+monitoring of clinical information in hepatology using GraphRAG </h1>
+</div>
 
-Defense slides for the undergraduate thesis *"Extraction and longitudinal
-monitoring of clinical information in hepatology using GraphRAG"*, built on
-the **college-beamer** template with UFAL branding. Content is in **English**.
+<div align="center" style="max-width: 850px; margin: 0 auto;">
+<table>
+  <tr>
+    <td valign="center" style="padding-right: 20px; width: 200px;">
+      <img src="https://user-images.githubusercontent.com/91018438/204195385-acc6fcd4-05a7-4f25-87d1-cb7d5cc5c852.png" alt="animated" width="230" />
+    </td>
+    <td valign="center" style="padding-left: 20px;">
+      <p>Defense slides for the undergraduate thesis **Extraction and longitudinal
+monitoring of clinical information in hepatology using GraphRAG**, built on
+the `college-beamer` template with UFAL branding.</p>
+    </td>
+  </tr>
+</table>
+</div>
 
 ## File structure
 
