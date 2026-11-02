@@ -1,7 +1,7 @@
 # Thesis Defense Presentation (TCC) — UFAL
 
-Defense slides for the undergraduate thesis *"Extraction and longitudinal
-monitoring of clinical information in hepatology using GraphRAG"*, built on
+Defense slides for the undergraduate thesis *"GraphRAG as a multilabel
+classifier for liver diseases in electronic health records"*, built on
 the **college-beamer** template with UFAL branding. Content is in **English**.
 
 ## File structure
