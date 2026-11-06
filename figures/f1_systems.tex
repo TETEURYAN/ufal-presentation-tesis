@@ -1,0 +1,31 @@
+% English version of Figure 5.1 of the thesis (OA-RAG-style horizontal bars)
+\begin{tikzpicture}[x=1cm, y=1cm, font=\footnotesize]
+\def\X{1.75}\def\W{3.75}\def\G{0.45}\def\H{0.27}
+\node[anchor=south, draw=black!40, line width=0.4pt, rounded corners=2pt, inner xsep=4pt, inner ysep=2pt, font=\scriptsize]
+  at ({\X+1.5*\W+\G},0.42) {\chip{modoBasic}\textit{basic}\hspace{8pt}\chip{modoLocal}\textit{local}\hspace{8pt}\chip{modoDrift}\textit{drift}};
+\foreach \k/\tit in {0/Macro precision, 1/Macro recall, 2/Macro F1}{
+  \pgfmathsetmacro{\x}{\X+\k*(\W+\G)}
+  \node[font=\footnotesize\bfseries, anchor=base, inner sep=1pt] at ({\x+\W/2},0.0) {\tit};
+  \foreach \t/\lab in {0/0, 0.25/{}, 0.5/{0.5}, 0.75/{}, 1/1}{
+    \draw[black!10, line width=0.4pt] ({\x+\W*\t},-0.15) -- ({\x+\W*\t},-3.20);
+    \node[anchor=north, inner sep=1.5pt, text=black!65, font=\scriptsize] at ({\x+\W*\t},-3.20) {\lab};
+  }
+  \draw[black!45, line width=0.4pt] (\x,-3.20) -- ({\x+\W},-3.20);
+}
+\foreach \s/\n/\c/\y/\p/\r/\f in {
+    S1/1/modoBasic/-0.40/0.783/0.613/0.681,
+    S2/2/modoBasic/-0.78/0.852/0.592/0.689,
+    S3/1/modoLocal/-1.43/0.858/0.635/0.718,
+    S4/2/modoLocal/-1.81/0.858/0.672/0.743,
+    S7/1/modoDrift/-2.46/0.648/0.946/0.745,
+    S8/2/modoDrift/-2.84/0.707/0.948/0.798}{
+  \node[anchor=east, inner sep=0pt] at ({\X-0.08},\y) {\s\ {\scriptsize\color{black!60}(level \n)}};
+  \foreach \k/\v in {0/\p, 1/\r, 2/\f}{
+    \pgfmathsetmacro{\x}{\X+\k*(\W+\G)}
+    \path[fill=\c, draw=white, line width=0.45pt] (\x,{\y+\H/2}) rectangle ({\x+\W*\v},{\y-\H/2});
+    \node[anchor=east, inner sep=2pt, text=white, font=\scriptsize] at ({\x+\W*\v},\y)
+      {\pgfmathprintnumber[fixed, precision=3, fixed zerofill]{\v}};
+  }
+}
+\foreach \ys in {-1.105, -2.135}{\draw[black!25, line width=0.4pt] (0.2,\ys) -- ({\X+3*\W+2*\G},\ys);}
+\end{tikzpicture}

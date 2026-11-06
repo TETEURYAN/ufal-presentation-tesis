@@ -1,0 +1,11 @@
+% Figure 3.11 of the thesis: fictional clinical note (kept in Portuguese, the
+% language of the records), with an English legend
+\newcommand{\mAbr}[1]{{\setlength{\fboxsep}{0.8pt}\colorbox{vAzul!22}{\strut #1}}}
+\newcommand{\mNeg}[1]{{\setlength{\fboxsep}{0.8pt}\colorbox{vVermelho!22}{\strut #1}}}
+\newcommand{\mInc}[1]{{\setlength{\fboxsep}{0.8pt}\colorbox{vAmbar!35}{\strut #1}}}
+\newcommand{\mGra}[1]{{\setlength{\fboxsep}{0.8pt}\colorbox{vRoxo!20}{\strut #1}}}
+\begin{tikzpicture}
+\node[draw=black!40, line width=0.4pt, rounded corners=2pt, fill=black!2, text width=0.92\linewidth, inner sep=6pt, align=left, font=\sffamily\footnotesize] (nota) {%
+\mAbr{Pac.} masc., 58a, \mAbr{HAS} e \mAbr{DM2} em uso de metformina 850mg 2x/dia. Refere dispneia aos \mGra{medios esforcos} \mGra{ha} 2 sem. \mNeg{Nega tabagismo e etilismo}. \mAbr{EF}: \mAbr{BEG}, corado, eupneico em repouso. \mAbr{HD}: \mInc{\mAbr{ICC}?} \mAbr{DPOC} \mInc{a esclarecer}. \mNeg{Afastada pneumonia} (\mAbr{RX} \mGra{torax} \mNeg{s/ alterações}). \mAbr{CD}: solicito \mAbr{ECO} e \mAbr{BNP}; retorno em 30d.};
+\node[below=4pt of nota, font=\scriptsize, align=center] {\chip{vAzul!22}abbreviation\hspace{8pt}\chip{vVermelho!22}negation\\[2pt]\chip{vAmbar!35}uncertainty\hspace{8pt}\chip{vRoxo!20}irregular spelling};
+\end{tikzpicture}

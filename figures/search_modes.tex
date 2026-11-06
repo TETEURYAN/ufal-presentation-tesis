@@ -1,0 +1,49 @@
+% English version of Figure 3.9 of the thesis: the four GraphRAG search modes
+\begin{tikzpicture}[
+  font=\footnotesize,
+  q/.style={draw=black!45, line width=0.4pt, rounded corners=2pt, fill=vNeutro!55, minimum width=13mm, minimum height=7mm, align=center},
+  lbl/.style={font=\footnotesize\itshape},
+  ch/.style={draw=modoBasic!75!black, line width=0.4pt, fill=modoBasic!30, minimum width=15mm, minimum height=3.6mm},
+  ent/.style={draw=modoLocal!75!black, line width=0.4pt, circle, fill=modoLocal!30, minimum size=4.5mm, inner sep=0},
+  sm/.style={draw=modoGlobal!75!black, line width=0.4pt, fill=modoGlobal!22, minimum width=10mm, minimum height=3.6mm},
+  note/.style={align=left, anchor=west, font=\scriptsize, text width=30mm},
+  arr/.style={-{Latex[length=1.6mm]}, black!65}
+]
+\node[lbl, text=modoBasic!85!black] at (-3.3,0) {\textbf{basic}};
+\node[q] (qb) at (-1.4,0) {query};
+\node[ch] (b1) at (1.9,0.5) {};
+\node[ch] (b2) at (1.9,0.0) {};
+\node[ch] (b3) at (1.9,-0.5) {};
+\draw[arr] (qb) -- (b2);
+\node[note] at (3.1,0) {text units by vector similarity};
+
+\node[lbl, text=modoLocal!85!black] at (-3.3,-2) {\textbf{local}};
+\node[q] (ql) at (-1.4,-2) {query};
+\node[ent] (c) at (1.9,-2) {};
+\node[ent] (n1) at (1.0,-1.4) {};
+\node[ent] (n2) at (2.8,-1.4) {};
+\node[ent] (n3) at (1.0,-2.6) {};
+\node[ent] (n4) at (2.8,-2.6) {};
+\draw (c)--(n1) (c)--(n2) (c)--(n3) (c)--(n4);
+\draw[arr] (ql) -- (c);
+\node[note] at (3.6,-2) {central entity and its neighbourhood};
+
+\node[lbl, text=modoGlobal!85!black] at (-3.3,-4) {\textbf{global}};
+\node[q] (qg) at (-1.4,-4) {query};
+\node[sm] (s1) at (1.5,-3.4) {};
+\node[sm] (s2) at (1.5,-4.0) {};
+\node[sm] (s3) at (1.5,-4.6) {};
+\node[draw=modoGlobal!75!black, line width=0.4pt, fill=modoGlobal!10, rounded corners=2pt, minimum height=6mm] (red) at (3.4,-4) {\textit{reduce}};
+\draw[arr] (qg) -- (s1); \draw[arr] (qg) -- (s2); \draw[arr] (qg) -- (s3);
+\draw[arr] (s1) -- (red); \draw[arr] (s2) -- (red); \draw[arr] (s3) -- (red);
+\node[note] at (4.4,-4) {\textit{map-reduce} over community reports};
+
+\node[lbl, text=modoDrift!85!black] at (-3.3,-6) {\textbf{drift}};
+\node[q] (qd) at (-1.4,-6) {query};
+\node[sm, draw=modoDrift!75!black, fill=modoDrift!25] (ds) at (1.5,-6) {reports};
+\node[ent, draw=modoDrift!75!black, fill=modoDrift!25] (de) at (3.5,-6) {};
+\draw[arr] (qd) -- (ds);
+\draw[arr, bend left=30] (ds) to (de);
+\draw[arr, bend left=30] (de) to (ds);
+\node[note] at (4.4,-6) {global $\leftrightarrow$ local iterations};
+\end{tikzpicture}

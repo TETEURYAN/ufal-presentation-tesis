@@ -1,0 +1,44 @@
+% English version of Figure 3.4 of the thesis: fictional clinical knowledge
+% graph as a property graph, Neo4j style (data model adapted from Neo4j's
+% patient-journey example)
+\begin{tikzpicture}[
+  font=\sffamily\scriptsize,
+  no/.style={circle, minimum size=15mm, inner sep=1pt, align=center, text width=13mm, line width=0.8pt},
+  pac/.style={no, fill=vAzul!60, draw=vAzul!80!black},
+  ate/.style={no, fill=vRoxo!30, draw=vRoxo!80!black},
+  cond/.style={no, fill=vLaranja!55, draw=vLaranja!80!black},
+  med/.style={no, fill=vVerde!50, draw=vVerde!80!black},
+  obs/.style={no, fill=vAmbar!55, draw=vAmbar!85!black},
+  rel/.style={-{Latex[length=2mm]}, line width=0.6pt, black!55},
+  rot/.style={midway, sloped, above, inner sep=1.2pt, font=\sffamily\tiny, text=black!80},
+  pilula/.style={rounded corners=5pt, inner xsep=5pt, inner ysep=2.5pt, font=\sffamily\tiny}
+]
+\node[pilula, fill=vAzul!60]    (l1) at (1.2,4.6) {Patient};
+\node[pilula, fill=vRoxo!30,    right=4pt of l1] (l2) {Visit};
+\node[pilula, fill=vLaranja!55, right=4pt of l2] (l3) {Condition};
+\node[pilula, fill=vVerde!50,   right=4pt of l3] (l4) {Medication};
+\node[pilula, fill=vAmbar!55,   right=4pt of l4] (l5) {Observation};
+\node[pac]  (p)   at (0,0)     {P-001};
+\node[ate]  (c1)  at (3.3,1.6) {Visit\\03/12};
+\node[ate]  (c2)  at (3.3,-1.6) {Visit\\08/20};
+\node[obs]  (hb)  at (6.0,3.5) {HbA1c\\8.1\%};
+\node[cond] (dm)  at (7.0,1.2) {Type 2\\diabetes};
+\node[med]  (met) at (9.8,3.2) {Metformin};
+\node[cond] (has) at (7.0,-1.2) {Hyper-\\tension};
+\node[med]  (los) at (9.8,-3.2) {Losartan};
+\draw[rel] (p)  -- (c1)  node[rot] {HAS\_VISIT};
+\draw[rel] (p)  -- (c2)  node[rot, below] {HAS\_VISIT};
+\draw[rel] (c1) -- (c2)  node[rot] {NEXT};
+\draw[rel] (c1) -- (hb)  node[rot] {HAS\_OBSERVATION};
+\draw[rel] (c1) -- (dm)  node[rot] {DIAGNOSED};
+\draw[rel] (c1) -- (met) node[rot, pos=0.62] {PRESCRIBED};
+\draw[rel] (met) -- (dm) node[rot] {TREATS};
+\draw[rel] (c2) -- (has) node[rot, below] {DIAGNOSED};
+\draw[rel] (c2) -- (los) node[rot, below, pos=0.62] {PRESCRIBED};
+\draw[rel] (los) -- (has) node[rot, below] {TREATS};
+\coordinate (m) at ($(c1)!0.5!(dm)$);
+\node[draw=black!40, line width=0.4pt, rounded corners=2pt, fill=white, align=left, font=\sffamily\tiny, inner sep=3pt] (props) at (4.95,0.25)
+  {\textbf{:DIAGNOSED}\\[1pt] date: 2025-03-12\\ certainty: confirmed\\ source: note of 03/12};
+\draw[black!45, dashed, line width=0.4pt] (props.north) -- (m);
+\fill[black!55] (m) circle (1.1pt);
+\end{tikzpicture}

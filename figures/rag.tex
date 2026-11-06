@@ -1,0 +1,30 @@
+% English version of Figure 3.3 of the thesis (RAG pipeline, after Lewis et al., 2020)
+\begin{tikzpicture}[
+  font=\footnotesize,
+  etapa/.style={draw, line width=0.6pt, rounded corners=2pt, align=center, text width=2.75cm, minimum height=9mm, inner sep=3pt},
+  idx/.style={etapa, draw=vAzul!75!black, fill=vAzul!14},
+  rec/.style={etapa, draw=vAmbar!80!black, fill=vAmbar!18},
+  ger/.style={etapa, draw=vVerde!75!black, fill=vVerde!16},
+  seta/.style={-{Latex[length=1.8mm]}, line width=0.6pt, black!65},
+  titulo/.style={font=\footnotesize\bfseries, anchor=base}
+]
+\node[titulo, text=vAzul!80!black] at (0,0.75) {1. Indexing};
+\node[titulo, text=vAmbar!85!black] at (4.3,0.75) {2. Retrieval};
+\node[titulo, text=vVerde!80!black] at (8.6,0.75) {3. Generation};
+\node[idx] (doc) at (0,0) {Documents};
+\node[idx] (seg) at (0,-1.35) {Chunking};
+\node[idx] (emb) at (0,-2.7) {Encoding into\\\textit{embeddings}};
+\node[idx] (bd)  at (0,-4.05) {Vector database};
+\node[rec] (q)   at (4.3,0) {Query};
+\node[rec] (qe)  at (4.3,-1.35) {Query\\encoding};
+\node[rec] (bus) at (4.3,-2.7) {Search for the $k$\\most similar chunks};
+\node[ger] (pr)  at (8.6,-1.35) {\textit{Prompt}: query\\+ $k$ chunks};
+\node[ger] (llm) at (8.6,-2.7) {LLM};
+\node[ger] (res) at (8.6,-4.05) {Answer};
+\draw[seta] (doc) -- (seg); \draw[seta] (seg) -- (emb); \draw[seta] (emb) -- (bd);
+\draw[seta] (q) -- (qe); \draw[seta] (qe) -- (bus);
+\draw[seta] (bd.east) -| node[pos=0.4, below=1pt, font=\scriptsize, text=black!60] {cosine similarity} (bus.south);
+\draw[seta] (q.east) -| (pr.north);
+\draw[seta] (bus.east) -- ++(0.55,0) |- (pr.west);
+\draw[seta] (pr) -- (llm); \draw[seta] (llm) -- (res);
+\end{tikzpicture}

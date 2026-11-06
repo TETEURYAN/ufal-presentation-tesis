@@ -1,0 +1,138 @@
+% English version of ufal-tesis/tesis/Cap04/figuras/arquitetura_sistema.tex
+% (Figure 4.1 of the thesis): architecture of the evaluated system, in four
+% panels, in the visual style of Xonto-RAG's overview figure (Wang et al., 2026).
+\begin{tikzpicture}[
+  x=1cm, y=1cm, font=\sffamily\footnotesize,
+  painel/.style={rounded corners=9pt, line width=0.8pt, draw=black!35},
+  titulo/.style={anchor=west, font=\rmfamily\bfseries\normalsize, inner sep=0pt},
+  num/.style={circle, draw=black!75, line width=0.8pt, inner sep=1.2pt, minimum size=5mm, font=\rmfamily\bfseries\normalsize},
+  caixa/.style={rounded corners=3pt, line width=0.6pt, align=center, inner sep=3pt, fill=white},
+  seta/.style={-{Latex[length=1.8mm]}, line width=0.7pt, black!70},
+  setao/.style={single arrow, shape border uses incircle, draw=black!45, fill=black!25, minimum height=6.5mm, minimum width=7mm, single arrow head extend=1.3mm, inner sep=0pt},
+  no/.style={circle, minimum size=2.6mm, inner sep=0pt, line width=0.6pt},
+  na/.style={no, fill=vAzul!45, draw=vAzul!80!black},
+  nl/.style={no, fill=vLaranja!50, draw=vLaranja!80!black},
+  nv/.style={no, fill=vVerde!45, draw=vVerde!80!black},
+  aresta/.style={line width=0.6pt, black!45},
+  rotulo/.style={font=\sffamily\scriptsize, text=black!65}
+]
+\def\PW{7.55}\def\PH{4.55}\def\GX{0.70}\def\GY{0.50}
+
+% ======================================================= fundos dos painéis
+\path[painel, fill=vAmbar!14]  (0,0) rectangle (\PW,-\PH);
+\path[painel, fill=vAzul!11]   (\PW+\GX,0) rectangle (2*\PW+\GX,-\PH);
+\path[painel, fill=vVerde!12]  (0,-\PH-\GY) rectangle (\PW,-2*\PH-\GY);
+\path[painel, fill=vRoxo!9]    (\PW+\GX,-\PH-\GY) rectangle (2*\PW+\GX,-2*\PH-\GY);
+
+% setas largas entre painéis
+\node[setao] at ({\PW+\GX/2},{-\PH/2}) {};
+\node[setao, shape border rotate=225, minimum height=5.5mm] at ({\PW+\GX/2},{-\PH-\GY/2}) {};
+\node[setao] at ({\PW+\GX/2},{-1.5*\PH-\GY}) {};
+
+% ============================== 1. Construção da amostra e dos rótulos
+\begin{scope}
+\node[num] at (0.42,-0.42) {1};
+\node[titulo] at (0.82,-0.42) {Sample construction};
+% funil: faixas cada vez mais estreitas
+\foreach \i/\w/\cor/\rot in {
+    0/6.7/vNeutro!85/{\faDatabase\ \ Corpus: 3,757 records, 6,405 visits},
+    1/5.9/vAmbar!30/{\faFilter\ \ Regular-expression screening},
+    2/5.1/vAmbar!45/{\faRobot\ \ LLM-assisted screening},
+    3/4.3/vAmbar!62/{\faUserMd\ \ Manual annotation (second opinion)}}{
+  \pgfmathsetmacro{\yt}{-0.85-\i*0.60}
+  \pgfmathsetmacro{\yb}{\yt-0.53}
+  \pgfmathsetmacro{\wb}{\w-0.8}
+  \path[fill=\cor, draw=white, line width=1pt]
+    ({\PW/2-\w/2},\yt) -- ({\PW/2+\w/2},\yt) -- ({\PW/2+\wb/2},\yb) -- ({\PW/2-\wb/2},\yb) -- cycle;
+  \node[font=\sffamily\scriptsize] at ({\PW/2},{(\yt+\yb)/2}) {\rot};
+}
+\draw[seta] ({\PW/2},-3.22) -- ({\PW/2},-3.47);
+\node[caixa, draw=vAmbar!80!black, text width=6.2cm, font=\sffamily\scriptsize] at ({\PW/2},-3.92)
+  {\textbf{537 records} with ground-truth labels\\[1pt]
+   \tikz[baseline=-0.6ex]{\foreach \k/\c in {0/vAzul,1/vVerde,2/vLaranja,3/vAmbar,4/vRoxo,5/vVermelho,6/vTeal,7/vCinza}{\fill[\c] (\k*0.32,0) circle (1.1mm);}}
+   \ \ eight diseases (multilabel)};
+\end{scope}
+
+% ======================================================= 2. Indexação (GraphRAG)
+\begin{scope}[xshift={(\PW+\GX)*1cm}]
+\node[num] at (0.42,-0.42) {2};
+\node[titulo] at (0.82,-0.42) {GraphRAG indexing};
+\node[caixa, draw=vAzul!75!black, text width=1.95cm, font=\sffamily\scriptsize] (pt)  at (1.25,-1.15) {\textit{Prompt}\\tuning};
+\node[caixa, draw=vAzul!75!black, text width=1.95cm, font=\sffamily\scriptsize] (seg) at (3.78,-1.15) {Chunking\\5,541 text units};
+\node[caixa, draw=vAzul!75!black, text width=1.95cm, font=\sffamily\scriptsize] (ext) at (6.30,-1.15) {Entities and\\relations (LLM)};
+\draw[seta] (pt) -- (seg); \draw[seta] (seg) -- (ext);
+% mini-grafo com três comunidades (achatado na vertical)
+\begin{scope}[shift={(0.35,-1.90)}, yscale=0.60]
+  \draw[vAzul!70, dashed, line width=0.5pt, rounded corners=5pt] (0.05,-0.15) rectangle (1.35,-1.55);
+  \draw[vLaranja!80, dashed, line width=0.5pt, rounded corners=5pt] (1.55,-0.15) rectangle (2.95,-1.40);
+  \draw[vVerde!80, dashed, line width=0.5pt, rounded corners=5pt] (0.70,-1.75) rectangle (2.45,-2.85);
+  \node[na] (a1) at (0.35,-0.45) {}; \node[na] (a2) at (1.05,-0.50) {}; \node[na] (a3) at (0.45,-1.20) {}; \node[na] (a4) at (1.10,-1.25) {};
+  \node[nl] (b1) at (1.90,-0.45) {}; \node[nl] (b2) at (2.65,-0.55) {}; \node[nl] (b3) at (2.25,-1.10) {};
+  \node[nv] (c1) at (1.00,-2.10) {}; \node[nv] (c2) at (1.75,-2.05) {}; \node[nv] (c3) at (1.35,-2.55) {}; \node[nv] (c4) at (2.15,-2.55) {};
+  \draw[aresta] (a1)--(a2) (a1)--(a3) (a2)--(a4) (a3)--(a4) (a2)--(a3) (b1)--(b2) (b2)--(b3) (b1)--(b3)
+                (c1)--(c2) (c1)--(c3) (c2)--(c4) (c3)--(c4) (c2)--(c3);
+  \draw[aresta, dashed, black!35] (a2)--(b1) (a4)--(c1) (b3)--(c2);
+\end{scope}
+\node[align=center, rotulo] at (1.85,-4.08) {Graph: 26,966 entities,\\88,347 relations};
+\draw[seta] (ext.south) -- ++(0,-0.20) -| (2.45,-1.97);
+% hierarquia de Leiden
+\begin{scope}[shift={(4.75,-1.95)}]
+  \node[rotulo, anchor=east] at (0.05,0) {level 0};
+  \node[rotulo, anchor=east] at (0.05,-0.58) {level 1};
+  \node[rotulo, anchor=east] at (0.05,-1.16) {level 2};
+  \node[no, fill=vNeutro, draw=black!55, minimum size=3.4mm] (r) at (1.35,0) {};
+  \node[na, minimum size=3mm] (h1) at (0.65,-0.58) {}; \node[nl, minimum size=3mm] (h2) at (1.35,-0.58) {}; \node[nv, minimum size=3mm] (h3) at (2.05,-0.58) {};
+  \foreach \k/\x/\s in {1/0.40/na, 2/0.90/na, 3/1.20/nl, 4/1.55/nl, 5/1.85/nv, 6/2.30/nv}{\node[\s, minimum size=2.2mm] (t\k) at (\x,-1.16) {};}
+  \draw[aresta] (r)--(h1) (r)--(h2) (r)--(h3) (h1)--(t1) (h1)--(t2) (h2)--(t3) (h2)--(t4) (h3)--(t5) (h3)--(t6);
+  \node[rotulo] at (1.35,-1.45) {$\vdots$ up to level 6};
+\end{scope}
+\node[align=center, rotulo] at (5.80,-4.08) {Leiden communities\\and community reports};
+\draw[seta] (3.32,-2.75) -- (3.82,-2.75);
+\end{scope}
+
+% ======================================================= 3. Consulta (S1 a S8)
+\begin{scope}[yshift={-(\PH+\GY)*1cm}]
+\node[num] at (0.42,-0.42) {3};
+\node[titulo] at (0.82,-0.42) {Query: systems S1 to S8};
+\node[caixa, draw=vVerde!75!black, text width=1.95cm, font=\sffamily\scriptsize] (pr) at (1.22,-1.55) {\faFileMedical\ \ Patient record\\{\tiny up to 8,000 characters}};
+\node[caixa, draw=vVerde!75!black, text width=1.95cm, font=\sffamily\scriptsize] (pp) at (1.22,-2.60) {\faAlignLeft\ \ Extraction\\{\tiny \textit{prompt}, version 3}};
+% grade modo x nível
+\begin{scope}[shift={(2.62,-0.90)}]
+  \node[rotulo] at (2.175,0.02) {community level};
+  \node[font=\sffamily\scriptsize\bfseries] at (1.75,-0.28) {1};
+  \node[font=\sffamily\scriptsize\bfseries] at (2.60,-0.28) {2};
+  \foreach \j/\m/\c/\a/\b/\op in {1/basic/modoBasic/S1/S2/1, 2/local/modoLocal/S3/S4/1, 3/global/modoGlobal/S5/S6/0.4, 4/drift/modoDrift/S7/S8/1}{
+    \pgfmathsetmacro{\y}{-0.28-\j*0.47}
+    \node[anchor=west, inner sep=0pt] at (0,\y) {\chip{\c}\textit{\m}};
+    \node[caixa, draw=\c!80!black, fill=\c!20, minimum width=8mm, inner sep=2pt, opacity=\op, text opacity=\op] at (1.75,\y) {\a};
+    \node[caixa, draw=\c!80!black, fill=\c!20, minimum width=8mm, inner sep=2pt, opacity=\op, text opacity=\op] at (2.60,\y) {\b};
+  }
+\end{scope}
+\draw[line width=0.7pt, black!70] (pr.east) -| (2.40,-2.08);
+\draw[line width=0.7pt, black!70] (pp.east) -| (2.40,-2.08);
+\draw[seta] (2.40,-2.08) -- (2.60,-2.08);
+\node[caixa, draw=vVerde!75!black, text width=1.0cm] (llm) at (6.60,-2.03) {{\Large\faRobot}\\[1pt] LLM};
+\node[font=\ttfamily\tiny, text=black!70, anchor=north] at (llm.south) {ling-2.6-flash};
+\draw[seta] (5.64,-2.03) -- (llm.west);
+\node[fill=vVermelho!75, text=white, rounded corners=2pt, align=left, inner sep=3.5pt, font=\sffamily\scriptsize] at ({\PW/2},-3.97)
+  {\textbf{Question:} which of the eight liver diseases are\\documented as present in this patient record?};
+\end{scope}
+
+% ======================================================= 4. Extração e avaliação
+\begin{scope}[xshift={(\PW+\GX)*1cm}, yshift={-(\PH+\GY)*1cm}]
+\node[num] at (0.42,-0.42) {4};
+\node[titulo] at (0.82,-0.42) {Extraction and evaluation};
+\node[caixa, draw=black!45, text width=3.25cm, align=left, font=\ttfamily\tiny] (resp) at (1.95,-1.62)
+  {{\sffamily\scriptsize\bfseries Model answer}\\[2pt] <RESPOSTA>\\ Cirrose hepática: \textquotedblleft\ldots\textquotedblright\\ Hipertensão portal: \textquotedblleft\ldots\textquotedblright\\ </RESPOSTA>};
+\node[caixa, draw=vRoxo!75!black, text width=2.75cm, font=\sffamily\scriptsize] (parser) at (5.75,-1.62)
+  {\faCogs\ \textbf{Deterministic}\\\textbf{parser}\\[1pt]{\tiny\color{black!65}canonical names and negation}};
+\draw[seta] (resp) -- (parser);
+\node[caixa, draw=vRoxo!75!black, text width=6.75cm, align=left, font=\sffamily\scriptsize] (aval) at ({\PW/2},-3.45)
+  {\textbf{Predicted diseases} $\times$ \textbf{ground-truth labels}\\[1pt]
+   \faChartBar\ \ multilabel metrics (EM, P, R, F1)\\
+   \faBalanceScale\ \ exact McNemar test between levels 1 and 2\\
+   \faFlask\ \ hypotheses H1 to H4 on \textit{drift} mode\\
+   \faSearch\ \ qualitative analysis of errors and of the graph};
+\draw[seta] (parser.south) -- (parser.south |- aval.north);
+\end{scope}
+\end{tikzpicture}

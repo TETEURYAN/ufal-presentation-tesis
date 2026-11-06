@@ -1,0 +1,44 @@
+% =====================================================================
+% Visual identity shared with the thesis (ufal-tesis/tesis/estilo-visual.tex):
+% palette and table macros adapted from OA-RAG (arXiv:2610.36335).
+% =====================================================================
+
+\usepackage{booktabs}
+\usepackage{colortbl}
+\usepackage{pifont}
+\usepackage{fontawesome5}
+\usetikzlibrary{calc, positioning, arrows.meta, patterns, shapes.arrows}
+
+% --- Main palette ------------------------------------------------------
+\definecolor{vAzul}{HTML}{2A78D6}
+\definecolor{vVerde}{HTML}{1BAF7A}
+\definecolor{vLaranja}{HTML}{EB6834}
+\definecolor{vAmbar}{HTML}{EDA100}
+\definecolor{vRoxo}{HTML}{4A3AA7}
+\definecolor{vVermelho}{HTML}{E34948}
+\definecolor{vTeal}{HTML}{2A9D8F}
+\definecolor{vCinza}{HTML}{9B9A94}
+\definecolor{vNeutro}{HTML}{DDDCD5}
+
+% One fixed colour per search mode, as in the thesis
+\colorlet{modoBasic}{vAzul}
+\colorlet{modoLocal}{vVerde}
+\colorlet{modoGlobal}{vRoxo}
+\colorlet{modoDrift}{vLaranja}
+
+% --- Tables ------------------------------------------------------------
+\colorlet{linhaDestaque}{black!6}
+\colorlet{colunaDestaque}{black!8}
+\newcommand{\tfirst}[1]{{\color{red!80!black}#1}}
+\newcommand{\tsecond}[1]{{\color{blue!80!black}#1}}
+\newcommand{\gain}[1]{\;{\color{green!50!black}\ensuremath{\uparrow}\,#1}}
+\newcommand{\loss}[1]{\;{\color{red!75!black}\ensuremath{\downarrow}\,#1}}
+\newcommand{\tcok}{\textcolor{green!50!black}{\ding{51}}}
+\newcommand{\tcno}{\textcolor{red!75!black}{\ding{55}}}
+\newcommand{\tcweak}{{\color{vAmbar!85!black}$\sim$}}
+
+% Colour swatch for legends (OA-RAG's "\chip")
+\newcommand{\chip}[1]{\tikz[baseline=-0.6ex]\filldraw[fill=#1, draw=black!40, line width=0.3pt] (0,-0.09) rectangle (0.30,0.09);\hspace{2.5pt}}
+
+% Small source line under a figure
+\newcommand{\figsource}[1]{\par\vskip2pt{\centering\tiny\color{black!60}Source: #1\par}}

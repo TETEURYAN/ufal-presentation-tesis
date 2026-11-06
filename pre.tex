@@ -31,6 +31,9 @@
 \fi
 \usetikzlibrary{positioning,arrows.meta}
 
+% palette, mode colours and table macros shared with the thesis
+\input{palette}
+
 % biblatex: reuses relevant entries from tesis/Ref/SampleReferences.bib (copied into
 % referencias.bib inside presentation/, without touching the original .bib in tesis/)
 \usepackage[backend=biber,style=numeric,sorting=none]{biblatex}
@@ -69,13 +72,23 @@ November 2026
     \section{Introduction}
 
     \begin{frame}{Context and Motivation}
-        \begin{itemize}
-            \item Liver diseases: a major global public-health problem \\
-            (cirrhosis, viral hepatitis, hepatocellular carcinoma) \cite{sousa2023}
-            \item In Brazil, chronic hepatitis mortality has been rising in the North/Northeast (2001--2020) \cite{sousa2023}
-            \item Diagnosis and follow-up rely on electronic health records rich in free text \cite{schneider2023}
-            \item Lack of computational tools hinders systematic analysis of this text \cite{hou2014}
-        \end{itemize}
+        \begin{columns}[T,totalwidth=0.95\textwidth]
+            \begin{column}{0.47\textwidth}
+                \small
+                \begin{itemize}
+                    \itemsep2pt
+                    \item Liver diseases: a major global public-health problem (cirrhosis, viral hepatitis, hepatocellular carcinoma) \cite{sousa2023}
+                    \item In Brazil, chronic hepatitis mortality has been rising in the North/Northeast (2001--2020) \cite{sousa2023}
+                    \item Around 80\% of medical data is unstructured \cite{kong2019}; diagnosis and follow-up rely on free-text records \cite{schneider2023}
+                    \item Lack of computational tools hinders systematic analysis of this text \cite{hou2014}
+                \end{itemize}
+            \end{column}
+            \begin{column}{0.51\textwidth}
+                \centering
+                {\scriptsize\bfseries Why clinical free text is hard (fictional note)}\par\vskip3pt
+                \input{figures/clinical_note.tex}
+            \end{column}
+        \end{columns}
     \end{frame}
 
     \begin{frame}{NLP, RAG, and GraphRAG}
@@ -90,6 +103,75 @@ November 2026
         \end{itemize}
         \vskip0.3em
         \centering\footnotesize\ctextbf{Gap: systematic evaluation of GraphRAG's search modes on real Brazilian-Portuguese clinical text remains largely unexplored}
+    \end{frame}
+
+    \begin{frame}{Background: Large Language Models}
+        \begin{columns}[c,totalwidth=0.95\textwidth]
+            \begin{column}{0.36\textwidth}
+                \centering
+                \includegraphics[height=0.70\textheight]{figures/transformer.png}
+                \figsource{\textcite{vaswani2017}}
+            \end{column}
+            \begin{column}{0.62\textwidth}
+                \small
+                \begin{itemize}
+                    \itemsep3pt
+                    \item Built on the \textbf{Transformer}: stacked self-attention + feed-forward layers, parallel over the sequence \cite{vaswani2017}
+                    \item Knowledge is \textbf{parametric}: frozen in the weights, updated only by retraining
+                    \item \textbf{Hallucination}: fluent but unsupported content \cite{ji2023} -- proposing treatments for fictional advanced-cancer cases, four LLMs reached F1 of only 0.04--0.19 against an expert \cite{benary2023}
+                \end{itemize}
+                \vskip0.3em
+                \centering\footnotesize\ctextbf{Reliable external knowledge is a precondition for clinical use}
+            \end{column}
+        \end{columns}
+    \end{frame}
+
+    \begin{frame}{Background: Retrieval-Augmented Generation}
+        \begin{center}
+            \resizebox{!}{0.56\textheight}{\input{figures/rag.tex}}
+            \figsource{based on \textcite{lewis2020}}
+        \end{center}
+        \small
+        Answers are grounded in retrieved evidence, but vector similarity does not model relations between entities: \emph{multi-hop} questions and corpus-wide synthesis are poorly served \cite{gao2024,edge2024}.
+    \end{frame}
+
+    \begin{frame}{Background: Knowledge Graphs}
+        \begin{columns}[c,totalwidth=0.95\textwidth]
+            \begin{column}{0.60\textwidth}
+                \centering
+                \resizebox{!}{5.5cm}{\input{figures/kg.tex}}
+                \figsource{fictional data; data model adapted from \textcite{neo4j_patient_journey}}
+            \end{column}
+            \begin{column}{0.38\textwidth}
+                \small
+                \begin{itemize}
+                    \itemsep3pt
+                    \item Entities + typed, directed relations: triples (subject, predicate, object) \cite{hogan2021}
+                    \item Properties carry date, certainty and \textbf{provenance}, letting a conclusion be traced back to its evidence
+                    \item Built automatically by an LLM (entity and relation extraction), at the cost of noise and duplicated entities
+                \end{itemize}
+            \end{column}
+        \end{columns}
+    \end{frame}
+
+    \begin{frame}{Background: GraphRAG Search Modes}
+        \begin{columns}[c,totalwidth=0.95\textwidth]
+            \begin{column}{0.55\textwidth}
+                \centering
+                \resizebox{\linewidth}{!}{\input{figures/search_modes.tex}}
+            \end{column}
+            \begin{column}{0.43\textwidth}
+                \small
+                \begin{itemize}
+                    \itemsep2pt
+                    \item Indexing: chunks $\to$ LLM-extracted entities/relations $\to$ \textbf{Leiden} community hierarchy \cite{traag2019} $\to$ community reports \cite{edge2024}
+                    \item \textcolor{modoBasic}{\textbf{basic}}: plain vector RAG
+                    \item \textcolor{modoLocal}{\textbf{local}}: entities and their neighbourhood
+                    \item \textcolor{modoGlobal}{\textbf{global}}: map-reduce over community reports
+                    \item \textcolor{modoDrift}{\textbf{drift}}: iterative global $\leftrightarrow$ local refinement; most complete, but many more LLM calls
+                \end{itemize}
+            \end{column}
+        \end{columns}
     \end{frame}
 
     \begin{frame}{General Objective}
@@ -123,7 +205,7 @@ November 2026
             \itemsep1pt
             \item Liver diseases carry a heavy burden of hospitalizations and mortality; the literature points to the need for precision medicine in hepatology \cite{SABRIE2023350}
             \item Free-text records remain underused: NLP already extracts useful information, but with low explainability \cite{omar2025}
-            \item NLP + knowledge graphs + retrieval-augmented generation (GraphRAG) applied to hepatology, and prompt-engineering strategies for Brazilian-Portuguese clinical text, are still rare \cite{stammers2025}
+            \item Medical GraphRAG systems are emerging \cite{wu2025,wang2026}, but NLP + knowledge graphs + GraphRAG applied to hepatology, and prompt-engineering strategies for Brazilian-Portuguese clinical text, are still rare \cite{stammers2025}
         \end{itemize}
         \vskip0.2em
         \begin{block}{Two gaps addressed}
@@ -137,28 +219,18 @@ November 2026
 
     \section{Methodology}
 
-    \begin{frame}{Pipeline Overview}
+    \begin{frame}{System Architecture}
         \begin{center}
-        \resizebox{\textwidth}{!}{%
-        \begin{tikzpicture}[node distance=0.5cm, every node/.style={font=\scriptsize}]
-            \tikzset{box/.style={draw=maincolor, thick, rounded corners, fill=morelightgray, text width=2.4cm, align=center, minimum height=1.5cm}}
-            \node[box] (a) {Clinical progress notes (HU-UFAL)};
-            \node[box, right=of a] (b) {Ground-truth funnel (537 records, 8 diseases)};
-            \node[box, right=of b] (c) {GraphRAG indexing (entity/relation extraction, Leiden hierarchy)};
-            \node[box, right=of c] (d) {Multilabel query prompt (8 systems: 4 modes $\times$ 2 community levels)};
-            \node[box, right=of d] (e) {Metrics \& statistical tests};
-            \foreach \x/\y in {a/b, b/c, c/d, d/e}{\draw[-{Latex}, thick] (\x) -- (\y);}
-        \end{tikzpicture}%
-        }
+            \resizebox{!}{5.75cm}{\input{figures/architecture.tex}}
         \end{center}
-        \vskip0.5em
-        Eight systems (\textit{basic}/\textit{local}/\textit{global}/\textit{drift} $\times$ community level 1/2) are compared against the same 537-record ground truth, isolating the effect of search mode from the effect of community granularity.
+        \vskip-0.4em
+        {\centering\scriptsize S5/S6 (\textit{global}) are greyed out: they could not be completed reliably.\par}
     \end{frame}
 
     \begin{frame}{Dataset and Ground Truth}
         \begin{itemize}
-            \item Clinical progress notes of liver-disease patients provided by UFAL's University Hospital (HU-UFAL)
-            \item Ground truth built through a funnel: text-based screening $\to$ LLM-assisted screening $\to$ manual annotation by a specialist
+            \item Clinical progress notes of liver-disease patients provided by UFAL's University Hospital (HU-UFAL): 3,757 records, 6,405 visits, anonymized before any use
+            \item Ground truth built through a funnel: regular-expression screening $\to$ LLM-assisted screening $\to$ manual annotation by a specialist
             \item 537 patient records, multilabel across eight liver diseases: cirrhosis, schistosomiasis, hepatitis B/C, steatosis, portal hypertension, upper GI bleeding, spontaneous bacterial peritonitis
             \item Non-random sample, enriched by screening -- not meant to estimate epidemiological prevalence
         \end{itemize}
@@ -167,51 +239,136 @@ November 2026
     \begin{frame}{The Eight Systems}
         \begin{center}
         \small
-        \renewcommand{\arraystretch}{1.15}
-        \begin{tabular}{|c|c|c|}
-            \hline
-            \textbf{System} & \textbf{Search mode} & \textbf{Community level} \\
-            \hline
-            S1 / S2 & basic & 1 / 2 \\
-            \hline
-            S3 / S4 & local & 1 / 2 \\
-            \hline
-            S5 / S6 & global & 1 / 2 \\
-            \hline
-            S7 / S8 & drift & 1 / 2 \\
-            \hline
+        \renewcommand{\arraystretch}{1.2}
+        \begin{tabular}{lcc}
+            \toprule
+            \textbf{Search mode} & \textbf{Community level 1} & \textbf{Community level 2} \\
+            \midrule
+            \chip{modoBasic}\textit{basic}   & S1 & S2 \\
+            \chip{modoLocal}\textit{local}   & S3 & S4 \\
+            {\color{black!45}\chip{modoGlobal}\textit{global}} & {\color{black!45}S5} & {\color{black!45}S6} \\
+            \chip{modoDrift}\textit{drift}   & S7 & S8 \\
+            \bottomrule
         \end{tabular}
         \end{center}
         \vskip0.5em
+        \small
         Each prompt asks the model to list \emph{all} diseases clearly documented as present in the record (multilabel), not a single principal diagnosis -- evaluated with multilabel metrics (F1 macro/micro, exact match, Hamming loss) and, for pairwise comparisons, McNemar's exact test \cite{mcnemar1947}, the Mann-Whitney U test \cite{mann_whitney1947}, and the chi-square test \cite{pearson1900}.
     \end{frame}
 
     \section{Results}
 
     \begin{frame}{Drift Wins on F1, But Not on Precision}
+        \begin{center}
+            \resizebox{0.94\textwidth}{!}{\input{figures/f1_systems.tex}}
+        \end{center}
+        \small
         \begin{itemize}
-            \item \textit{Drift} obtains the highest macro F1 among the comparable systems
-            \item That gain does not come from higher accuracy -- it comes from substantially higher recall ($\sim$95\%) against 60--67\% for the other modes, at the cost of lower precision
-            \item This trade-off is \emph{not} uniform across the eight diseases
+            \itemsep1pt
+            \item \textit{Drift} has the highest macro F1 (S8: 0.798) -- driven by recall ($\sim$95\% vs.\ 59--67\%), at the cost of precision (65--71\% vs.\ 78--86\%)
         \end{itemize}
-        \vskip0.3em
-        \centering\footnotesize\ctextbf{Drift behaves like a high-recall, lower-precision classifier -- the net effect depends on how indirect the textual evidence for each disease is}
+        \vskip0.1em
+        \centering\footnotesize\ctextbf{Drift behaves like a high-recall, lower-precision classifier}
     \end{frame}
 
     \begin{frame}{Per-Disease Pattern}
+        \begin{center}
+            \resizebox{0.94\textwidth}{!}{\input{figures/f1_disease.tex}}
+        \end{center}
+        \footnotesize
         \begin{itemize}
-            \item \textbf{Diseases requiring inference from scattered evidence} (cirrhosis, portal hypertension): \textit{drift} beats \textit{basic} by nearly 20 F1 points
-            \item \textbf{Diseases with a direct textual marker} (steatosis, hepatitis C): small gain, due to a ceiling effect -- simpler modes already do well
-            \item \textbf{Hepatitis B}, and more markedly \textbf{upper GI bleeding}: \textit{drift} does not even beat the simpler modes
-            \item A targeted statistical investigation confirmed a concrete anatomical-confusion mechanism (upper vs.\ lower GI bleeding) explaining the bleeding case
+            \itemsep1pt
+            \item \textbf{Scattered, indirect evidence} (cirrhosis, portal hypertension): \textit{drift} beats \textit{basic} by nearly 20 F1 points
+            \item \textbf{Direct textual marker} (steatosis, hepatitis C): small gain, ceiling effect; \textbf{hepatitis B} and \textbf{upper GI bleeding}: no real gain
         \end{itemize}
+        \figsource{best value per disease outlined; $\Delta$ = S7 (\textit{drift}) minus S1 (\textit{basic}), in F1 points}
+    \end{frame}
+
+    \begin{frame}{Where Drift Errs: Confusion Matrices (S8)}
+        \begin{center}
+            \resizebox{!}{5.5cm}{\input{figures/confusion_S8.tex}}
+        \end{center}
+        \vskip-0.3em
+        {\centering\footnotesize Errors concentrate in \textbf{false positives}; upper GI bleeding has the lowest precision (0.36).\par}
     \end{frame}
 
     \begin{frame}{Community Level: Less Decisive Than Search Mode}
-        \begin{itemize}
-            \item McNemar's exact test found \emph{no} statistically significant difference between community level 1 and level 2, for any comparable search mode
-            \item Within the tested range, this design choice matters less than which search mode is used
-        \end{itemize}
+        \begin{columns}[c,totalwidth=0.95\textwidth]
+            \begin{column}{0.50\textwidth}
+                \centering\small
+                \renewcommand{\arraystretch}{1.2}
+                \begin{tabular}{lcccc}
+                    \toprule
+                    Mode & $n$ & $b$ & $c$ & $p$-value \\
+                    \midrule
+                    \chip{modoBasic}\textit{basic} & 537 & 45 & 40 & 0.665 \\
+                    \chip{modoLocal}\textit{local} & 537 & 44 & 47 & 0.834 \\
+                    \chip{modoDrift}\textit{drift} & 531 & 44 & 61 & 0.118 \\
+                    \bottomrule
+                \end{tabular}
+                \figsource{exact McNemar test on exact match; $b$: only level 1 correct, $c$: only level 2 correct}
+            \end{column}
+            \begin{column}{0.48\textwidth}
+                \begin{itemize}
+                    \item No statistically significant difference between levels 1 and 2 for any comparable mode ($\alpha = 0.05$)
+                    \item Within the tested range, this design choice matters less than which search mode is used
+                \end{itemize}
+            \end{column}
+        \end{columns}
+    \end{frame}
+
+    \begin{frame}{Why Drift Succeeds -- and Fails}
+        \footnotesize
+        \renewcommand{\arraystretch}{1.12}
+        \textbf{Drift correct, most others wrong} ($n_A=206$ vs.\ $n_B=593$)\par\vskip2pt
+        \begin{tabular}{lp{7.6cm}cc}
+            \toprule
+            H1 & Median characters: A = 6,160, B = 3,230 & $<0.001$ & \tcok\ Confirmed \\
+            H2 & Literal disease term in the text: A = 69.4\%, B = 89.4\% & $<0.001$ & \tcok\ Confirmed \\
+            H3 & Median visits: A = 2, B = 2 & 0.211 & \tcno\ Refuted \\
+            H4 & Canonical entity not in the index: A = 46.6\%, B = 45.7\% & 0.887 & \tcno\ Refuted \\
+            \bottomrule
+        \end{tabular}
+        \vskip6pt
+        \textbf{Drift false positive, most others correct} ($n_A=291$ vs.\ $n_B=3{,}144$)\par\vskip2pt
+        \begin{tabular}{lp{7.6cm}cc}
+            \toprule
+            H1 & Risk/hypothesis language in drift's justification: 13.4\% & -- & \tcweak\ Weak \\
+            H2 & Median characters: A = 4,307, B = 2,818 & $<0.001$ & \tcok\ Confirmed \\
+            H3 & Lower-GI terms in upper-GI-bleeding FPs: 8.7\% vs.\ 2.8\% & 0.040 & \tcok\ Confirmed \\
+            H4 & Cited evidence not verbatim in the record: 13.8\% & -- & \tcweak\ Weak \\
+            \bottomrule
+        \end{tabular}
+        \vskip4pt
+        Iterative retrieval helps when bridging evidence is missing, but also surfaces spurious associations \cite{guo2026}.
+    \end{frame}
+
+    \begin{frame}{Text Length Amplifies Drift's Behaviour}
+        \begin{center}
+            \includegraphics[height=5.0cm]{figures/drift_hits_errors.png}
+        \end{center}
+        \vskip-0.3em
+        \small
+        Errors have a slightly higher median length, but the distributions overlap widely: length is an \textbf{amplifier}, not an isolated predictor.
+    \end{frame}
+
+    \begin{frame}{Graph Fragmentation Across Communities}
+        \begin{columns}[c,totalwidth=0.95\textwidth]
+            \begin{column}{0.58\textwidth}
+                \centering
+                \includegraphics[width=\linewidth,height=5.0cm,keepaspectratio]{figures/subgraph_1800283.png}
+                \figsource{patient 1800283, level-1 communities 457 and 460 (entity names as extracted, in Portuguese)}
+            \end{column}
+            \begin{column}{0.40\textwidth}
+                \small
+                \begin{itemize}
+                    \itemsep2pt
+                    \item The same patient's entities fall into different Leiden communities; synonyms of a target disease can be separated from the canonical entity
+                    \item Not an isolated case: median 38 entities and 81 relations per patient, spread over communities equal to 55\% of the entity count
+                    \item Causes: generic extraction prompts multiply entities \cite{ye2026}; Leiden is not reproducible on sparse graphs \cite{hossain2026}
+                \end{itemize}
+            \end{column}
+        \end{columns}
     \end{frame}
 
     \begin{frame}{Qualitative Error Patterns (Drift)}
@@ -222,6 +379,12 @@ November 2026
             \item Confusion between a vaccine-immunity marker and an active infection
             \item At least one case of citing a lab result that does not appear in the source text
         \end{itemize}
+        \vskip0.4em
+        \begin{block}{Explicit negation ignored -- patient 890194}
+            \footnotesize
+            \textbf{Record:} ``Hipertensão portal não-cirrótica: esquistossomose hepatoesplênica.'' (\emph{non-cirrhotic portal hypertension})\\[2pt]
+            \textbf{Drift (S7):} ``Cirrose hepática: apresenta hepatomegalia, esplenectomia [...]'' (\emph{predicts cirrhosis})
+        \end{block}
     \end{frame}
 
     \section{Concluding Remarks}
@@ -247,14 +410,25 @@ November 2026
     \end{frame}
 
     \begin{frame}{Limitations \& Future Work}
-        \small
-        \begin{itemize}
-            \item Reasoning-model latency/cost prevented completing the reinforced-prompt validation for upper GI bleeding, and a reliable evaluation of \textit{global} mode (S5/S6)
-            \item Spontaneous bacterial peritonitis has only 2 positive cases in the sample -- statistically insufficient
-            \item Non-random, screening-enriched sample -- not an epidemiological estimate
-        \end{itemize}
-        \vskip0.3em
-        \textbf{Future work:} finish the GI-bleeding prompt validation; evaluate \textit{global} mode properly; fix hepatitis B/C false positives; add a second annotator; replicate at another institution/specialty.
+        \begin{columns}[c,totalwidth=0.95\textwidth]
+            \begin{column}{0.52\textwidth}
+                \small
+                \begin{itemize}
+                    \itemsep1pt
+                    \item Reasoning-model latency/cost prevented completing the reinforced-prompt validation for upper GI bleeding, and a reliable evaluation of \textit{global} mode (S5/S6)
+                    \item Spontaneous bacterial peritonitis: only 2 positive cases
+                    \item Non-random, screening-enriched sample
+                    \item A single Leiden partition, not reproducible on sparse graphs \cite{hossain2026}
+                \end{itemize}
+                \vskip0.2em
+                \footnotesize\textbf{Future work:} finish the GI-bleeding validation; evaluate \textit{global} properly; one patient entity per record \cite{ye2026}; deterministic $k$-core hierarchies \cite{hossain2026}; a second annotator; replication elsewhere.
+            \end{column}
+            \begin{column}{0.46\textwidth}
+                \centering
+                \includegraphics[width=\linewidth]{figures/kcore_hierarchy.pdf}
+                \figsource{\textcite{hossain2026}, CC BY 4.0}
+            \end{column}
+        \end{columns}
     \end{frame}
 
     \bibliographpage
