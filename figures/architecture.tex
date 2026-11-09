@@ -112,7 +112,7 @@
 \draw[line width=0.7pt, black!70] (pp.east) -| (2.40,-2.08);
 \draw[seta] (2.40,-2.08) -- (2.60,-2.08);
 \node[caixa, draw=vVerde!75!black, text width=1.0cm] (llm) at (6.60,-2.03) {{\Large\faRobot}\\[1pt] LLM};
-\node[font=\ttfamily\tiny, text=black!70, anchor=north] at (llm.south) {ling-2.6-flash};
+\node[font=\ttfamily\tiny, text=black!70, anchor=north] at (llm.south) {gpt-oss-120b};
 \draw[seta] (5.64,-2.03) -- (llm.west);
 \node[fill=vVermelho!75, text=white, rounded corners=2pt, align=left, inner sep=3.5pt, font=\sffamily\scriptsize] at ({\PW/2},-3.97)
   {\textbf{Question:} which of the eight liver diseases are\\documented as present in this patient record?};
@@ -130,7 +130,6 @@
 \node[caixa, draw=vRoxo!75!black, text width=6.75cm, align=left, font=\sffamily\scriptsize] (aval) at ({\PW/2},-3.45)
   {\textbf{Predicted diseases} $\times$ \textbf{ground-truth labels}\\[1pt]
    \faChartBar\ \ multilabel metrics (EM, P, R, F1)\\
-   \faBalanceScale\ \ exact McNemar test between levels 1 and 2\\
    \faFlask\ \ hypotheses H1 to H4 on \textit{drift} mode\\
    \faSearch\ \ qualitative analysis of errors and of the graph};
 \draw[seta] (parser.south) -- (parser.south |- aval.north);

@@ -43,6 +43,9 @@
 
 \definecolor{hrefcol}{RGB}{55, 50, 204} % Example: blue color
 
+% one panel of the 'Eight Target Diseases' frame (image + caption)
+\newcommand{\disease}[2]{\begin{minipage}[t]{0.19\textwidth}\centering\includegraphics[width=\linewidth]{figures/diseases/#1}\\[1pt]{\scriptsize #2}\end{minipage}}
+
 % meta-data
 \title{
 {\large\color{blue!60!black}\textbf{Computer Science}}\\[0.8em]
@@ -89,6 +92,21 @@ November 2026
                 \input{figures/clinical_note.tex}
             \end{column}
         \end{columns}
+    \end{frame}
+
+    \begin{frame}{The Eight Target Diseases}
+        \centering
+        \disease{a_esteatose}{(a) Hepatic steatosis}\hspace{0.035\textwidth}
+        \disease{b_hepatite_b}{(b) Hepatitis B}\hspace{0.035\textwidth}
+        \disease{c_hepatite_c}{(c) Hepatitis C}\hspace{0.035\textwidth}
+        \disease{d_cirrose}{(d) Cirrhosis}\\[3pt]
+        \disease{e_esquistossomose}{(e) Schistosomiasis}\hspace{0.035\textwidth}
+        \disease{f_hipertensao_portal}{(f) Portal hypertension}\hspace{0.035\textwidth}
+        \disease{g_hda}{(g) Upper GI bleeding}\hspace{0.035\textwidth}
+        \disease{h_pbe}{(h) Ascites (SBP)}
+        \vskip2pt
+        {\footnotesize Causes (a--c) $\to$ cirrhosis (d) and schistosomiasis (e) $\to$ portal hypertension (f) $\to$ decompensations (g, h)\par}
+        \figsource{Wikimedia Commons: (a) NIEHS/NIH, (b) CDC/E. Palmer, (c) Catanese et al., (e) CDC: public domain; (d) CDC/E. P. Ewing Jr., CC0; (f) Yang and Chen, NEJM 2005; (g) Jeremias, CC BY-SA 4.0; (h) J. Heilman, CC BY-SA 3.0}
     \end{frame}
 
     \begin{frame}{NLP, RAG, and GraphRAG}
@@ -189,7 +207,7 @@ November 2026
 
     \begin{frame}{Specific Objectives}
         \begin{itemize}
-            \item Build a labeled set of patient records for eight liver diseases, through a funnel of text-based screening, LLM-assisted screening, and manual expert annotation
+            \item Build a labeled set of patient records for eight liver diseases, through a funnel of text-based screening, LLM-assisted screening, and manual annotation
             \item Index the corpus with GraphRAG, tuning the entity/relation extraction prompt for hepatology, and build the community hierarchy via the Leiden algorithm
             \item Develop and refine, across successive versions, the query prompt that extracts the documented diseases from the model's answer
             \item Systematically evaluate the four GraphRAG search modes (\textit{basic}, \textit{local}, \textit{global}, \textit{drift}) at two community levels, via multilabel classification metrics and statistical tests, against the annotated ground truth
@@ -230,7 +248,7 @@ November 2026
     \begin{frame}{Dataset and Ground Truth}
         \begin{itemize}
             \item Clinical progress notes of liver-disease patients provided by UFAL's University Hospital (HU-UFAL): 3,757 records, 6,405 visits, anonymized before any use
-            \item Ground truth built through a funnel: regular-expression screening $\to$ LLM-assisted screening $\to$ manual annotation by a specialist
+            \item Ground truth built through a funnel: regular-expression screening $\to$ LLM-assisted screening $\to$ manual annotation (single annotator, the author)
             \item 537 patient records, multilabel across eight liver diseases: cirrhosis, schistosomiasis, hepatitis B/C, steatosis, portal hypertension, upper GI bleeding, spontaneous bacterial peritonitis
             \item Non-random sample, enriched by screening -- not meant to estimate epidemiological prevalence
         \end{itemize}
@@ -253,7 +271,12 @@ November 2026
         \end{center}
         \vskip0.5em
         \small
-        Each prompt asks the model to list \emph{all} diseases clearly documented as present in the record (multilabel), not a single principal diagnosis -- evaluated with multilabel metrics (F1 macro/micro, exact match, Hamming loss) and, for pairwise comparisons, McNemar's exact test \cite{mcnemar1947}, the Mann-Whitney U test \cite{mann_whitney1947}, and the chi-square test \cite{pearson1900}.
+        \begin{itemize}
+            \itemsep1pt
+            \item Leiden hierarchy with 7 levels; level 0 discarded (46 communities, mean of 543.6 entities); levels 1 and 2 keep communities of bounded size \cite{hossain2026}
+            \item A single query prompt asks the model (\texttt{gpt-oss-120b}, run locally) to list \emph{all} diseases clearly documented as present (multilabel)
+            \item Multilabel metrics (F1 macro/micro, exact match); Mann-Whitney U \cite{mann_whitney1947} and chi-square \cite{pearson1900} tests to investigate \textit{drift}'s hits and errors
+        \end{itemize}
     \end{frame}
 
     \section{Results}
@@ -297,21 +320,22 @@ November 2026
             \begin{column}{0.50\textwidth}
                 \centering\small
                 \renewcommand{\arraystretch}{1.2}
-                \begin{tabular}{lcccc}
+                \begin{tabular}{lccc}
                     \toprule
-                    Mode & $n$ & $b$ & $c$ & $p$-value \\
+                    Mode & Level 1 & Level 2 & $\Delta$ \\
                     \midrule
-                    \chip{modoBasic}\textit{basic} & 537 & 45 & 40 & 0.665 \\
-                    \chip{modoLocal}\textit{local} & 537 & 44 & 47 & 0.834 \\
-                    \chip{modoDrift}\textit{drift} & 531 & 44 & 61 & 0.118 \\
+                    \chip{modoBasic}\textit{basic} & 0.681 & 0.689 & +0.008 \\
+                    \chip{modoLocal}\textit{local} & 0.718 & 0.743 & +0.025 \\
+                    \chip{modoDrift}\textit{drift} & 0.745 & 0.798 & +0.053 \\
                     \bottomrule
                 \end{tabular}
-                \figsource{exact McNemar test on exact match; $b$: only level 1 correct, $c$: only level 2 correct}
+                \figsource{macro F1 per community level; \textit{drift} level 2 (S8): 531 valid answers}
             \end{column}
             \begin{column}{0.48\textwidth}
                 \begin{itemize}
-                    \item No statistically significant difference between levels 1 and 2 for any comparable mode ($\alpha = 0.05$)
-                    \item Within the tested range, this design choice matters less than which search mode is used
+                    \item Level 2 is slightly better in every mode, by at most 0.053 (\textit{drift})
+                    \item That gap is smaller than the \textit{basic}--\textit{drift} gap at either level (0.064 and 0.109)
+                    \item Within the tested range, the community level matters less than the search mode
                 \end{itemize}
             \end{column}
         \end{columns}
@@ -356,8 +380,8 @@ November 2026
         \begin{columns}[c,totalwidth=0.95\textwidth]
             \begin{column}{0.58\textwidth}
                 \centering
-                \includegraphics[width=\linewidth,height=5.0cm,keepaspectratio]{figures/subgraph_1800283.png}
-                \figsource{patient 1800283, level-1 communities 457 and 460 (entity names as extracted, in Portuguese)}
+                \includegraphics[width=\linewidth,height=5.0cm,keepaspectratio]{figures/subgraph_patient_A.png}
+                \figsource{patient A (pseudonym), level-1 communities 457 and 460 (entity names as extracted, in Portuguese)}
             \end{column}
             \begin{column}{0.40\textwidth}
                 \small
@@ -380,7 +404,7 @@ November 2026
             \item At least one case of citing a lab result that does not appear in the source text
         \end{itemize}
         \vskip0.4em
-        \begin{block}{Explicit negation ignored -- patient 890194}
+        \begin{block}{Explicit negation ignored -- patient B}
             \footnotesize
             \textbf{Record:} ``Hipertensão portal não-cirrótica: esquistossomose hepatoesplênica.'' (\emph{non-cirrhotic portal hypertension})\\[2pt]
             \textbf{Drift (S7):} ``Cirrose hepática: apresenta hepatomegalia, esplenectomia [...]'' (\emph{predicts cirrhosis})
@@ -401,9 +425,9 @@ November 2026
     \begin{frame}{Contributions}
         \small
         \begin{itemize}
-            \item Systematic evaluation of GraphRAG on real Brazilian-Portuguese clinical records, with expert-annotated ground truth
+            \item Systematic evaluation of GraphRAG on real Brazilian-Portuguese clinical records, with manually annotated ground truth
             \item A sample/ground-truth construction funnel for unevenly prevalent classes
-            \item Statistical characterization (McNemar, Mann-Whitney, chi-square) of \textit{drift}'s success/failure mechanisms, confirming the GI-bleeding anatomical confusion
+            \item Statistical characterization (Mann-Whitney, chi-square) of \textit{drift}'s success/failure mechanisms, confirming the GI-bleeding anatomical confusion
             \item A qualitative error taxonomy with concrete cases
             \item Reusable scripts/pipeline for the full evaluation, from sample screening to statistical and qualitative analysis
         \end{itemize}
@@ -415,13 +439,14 @@ November 2026
                 \small
                 \begin{itemize}
                     \itemsep1pt
-                    \item Reasoning-model latency/cost prevented completing the reinforced-prompt validation for upper GI bleeding, and a reliable evaluation of \textit{global} mode (S5/S6)
                     \item Spontaneous bacterial peritonitis: only 2 positive cases
+                    \item Single annotator: inter-annotator agreement not measured
                     \item Non-random, screening-enriched sample
+                    \item No reliable results for \textit{global} mode (S5/S6): dynamic community selection made too many calls
                     \item A single Leiden partition, not reproducible on sparse graphs \cite{hossain2026}
                 \end{itemize}
                 \vskip0.2em
-                \footnotesize\textbf{Future work:} finish the GI-bleeding validation; evaluate \textit{global} properly; one patient entity per record \cite{ye2026}; deterministic $k$-core hierarchies \cite{hossain2026}; a second annotator; replication elsewhere.
+                \footnotesize\textbf{Future work:} reduce GI-bleeding false positives (contrastive examples, larger or clinical LLMs); evaluate \textit{global} properly; rules for hepatitis B/C false positives; one patient entity per record \cite{ye2026}; deterministic $k$-core hierarchies \cite{hossain2026}; a second annotator; replication elsewhere.
             \end{column}
             \begin{column}{0.46\textwidth}
                 \centering
