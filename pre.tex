@@ -35,7 +35,8 @@
 \input{palette}
 
 % cartões claros na cor do tema (perguntas de pesquisa, lacunas, comparação de trechos)
-\usepackage[most]{tcolorbox}
+\usepackage{tcolorbox}
+\tcbuselibrary{skins}
 \newtcolorbox{rqcard}[1]{enhanced, colback=maincolor!7, colframe=maincolor!7, boxrule=0pt, arc=3pt,
   left=30pt, right=8pt, top=5pt, bottom=5pt, before skip=0pt, after skip=5pt,
   fontupper=\small\raggedright\color{black!80},
