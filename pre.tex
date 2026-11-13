@@ -120,7 +120,7 @@ November 2026
             \item Effectiveness depends on the task, graph quality, and community-detection strategy \cite{xiang2025}
         \end{itemize}
         \vskip0.3em
-        \centering\footnotesize\ctextbf{Gap: systematic evaluation of GraphRAG's search modes on real Brazilian-Portuguese clinical text remains largely unexplored}
+        \centering\footnotesize\ctextbf{Gap: GraphRAG in health has been evaluated on synthetic records, medical QA or outcome prediction \cite{baptista2025,wu2025,kare2025} -- not yet on identifying diseases in real Brazilian-Portuguese records, nor comparing its search modes and community levels}
     \end{frame}
 
     \begin{frame}{Background: Large Language Models}
@@ -250,6 +250,7 @@ November 2026
             \item Clinical progress notes of liver-disease patients provided by UFAL's University Hospital (HU-UFAL): 3,757 records, 6,405 visits, anonymized before any use
             \item Ground truth built through a funnel: regular-expression screening $\to$ LLM-assisted screening $\to$ manual annotation (single annotator, the author)
             \item 537 patient records, multilabel across eight liver diseases: cirrhosis, schistosomiasis, hepatitis B/C, steatosis, portal hypertension, upper GI bleeding, spontaneous bacterial peritonitis
+            \item 231 records (43\%) have two or more diseases; most frequent pairs: cirrhosis + portal hypertension (116) and schistosomiasis + portal hypertension (64)
             \item Non-random sample, enriched by screening -- not meant to estimate epidemiological prevalence
         \end{itemize}
     \end{frame}
@@ -274,8 +275,9 @@ November 2026
         \begin{itemize}
             \itemsep1pt
             \item Leiden hierarchy with 7 levels; level 0 discarded (46 communities, mean of 543.6 entities); levels 1 and 2 keep communities of bounded size \cite{hossain2026}
-            \item A single query prompt asks the model (\texttt{gpt-oss-120b}, run locally) to list \emph{all} diseases clearly documented as present (multilabel)
-            \item Multilabel metrics (F1 macro/micro, exact match); Mann-Whitney U \cite{mann_whitney1947} and chi-square \cite{pearson1900} tests to investigate \textit{drift}'s hits and errors
+            \item A single query prompt asks the model to list \emph{all} diseases clearly documented as present (multilabel)
+            \item \texttt{gpt-oss-120b}, open weights, run locally for indexing and querying: health records are sensitive personal data under the LGPD \cite{brasil2018lgpd}
+            \item Multilabel metrics (F1 macro/micro, exact match); hypothesis tests on two groups to investigate \textit{drift}'s hits and errors
         \end{itemize}
     \end{frame}
 
@@ -294,17 +296,19 @@ November 2026
         \centering\footnotesize\ctextbf{Drift behaves like a high-recall, lower-precision classifier}
     \end{frame}
 
-    \begin{frame}{Per-Disease Pattern}
-        \begin{center}
-            \resizebox{0.94\textwidth}{!}{\input{figures/f1_disease.tex}}
-        \end{center}
-        \footnotesize
+    \begin{frame}{Per-Disease Pattern, at Both Community Levels}
+        \centering
+        {\scriptsize\bfseries Level 1}\par\vskip1pt
+        \resizebox{0.64\textwidth}{!}{\input{figures/f1_disease.tex}}\par\vskip2pt
+        {\scriptsize\bfseries Level 2}\par\vskip1pt
+        \resizebox{0.64\textwidth}{!}{\input{figures/f1_disease_l2.tex}}\par\vskip-2pt
+        \raggedright\footnotesize
         \begin{itemize}
-            \itemsep1pt
-            \item \textbf{Scattered, indirect evidence} (cirrhosis, portal hypertension): \textit{drift} beats \textit{basic} by nearly 20 F1 points
-            \item \textbf{Direct textual marker} (steatosis, hepatitis C): small gain, ceiling effect; \textbf{hepatitis B} and \textbf{upper GI bleeding}: no real gain
+            \itemsep0pt
+            \item \textbf{Indirect evidence} (cirrhosis, portal hypertension): largest \textit{drift} gain at both levels (18--23 points)
+            \item Hepatitis B and upper GI bleeding are exceptions \textbf{only at level 1}; at level 2, \textit{drift} is best for every disease
         \end{itemize}
-        \figsource{best value per disease outlined; $\Delta$ = S7 (\textit{drift}) minus S1 (\textit{basic}), in F1 points}
+        \figsource{best value per disease outlined; $\Delta$ = \textit{drift} minus \textit{basic} at the same level, in F1 points}
     \end{frame}
 
     \begin{frame}{Where Drift Errs: Confusion Matrices (S8)}
@@ -341,30 +345,41 @@ November 2026
         \end{columns}
     \end{frame}
 
-    \begin{frame}{Why Drift Succeeds -- and Fails}
+    \begin{frame}{Why Drift Succeeds Where Others Fail}
         \footnotesize
-        \renewcommand{\arraystretch}{1.12}
-        \textbf{Drift correct, most others wrong} ($n_A=206$ vs.\ $n_B=593$)\par\vskip2pt
-        \begin{tabular}{lp{7.6cm}cc}
+        \textbf{Group A} ($n=206$): disease present, \textit{drift} (S7 or S8) finds it, most of S1--S4 miss it. \textbf{Group B} ($n=593$): all other disease-present pairs.\par\vskip4pt
+        \renewcommand{\arraystretch}{1.15}
+        \begin{tabular}{lp{4.1cm}p{3.6cm}cc}
             \toprule
-            H1 & Median characters: A = 6,160, B = 3,230 & $<0.001$ & \tcok\ Confirmed \\
-            H2 & Literal disease term in the text: A = 69.4\%, B = 89.4\% & $<0.001$ & \tcok\ Confirmed \\
-            H3 & Median visits: A = 2, B = 2 & 0.211 & \tcno\ Refuted \\
-            H4 & Canonical entity not in the index: A = 46.6\%, B = 45.7\% & 0.887 & \tcno\ Refuted \\
+            & \textbf{Hypothesis: group A\ldots} & \textbf{Result} & $p$ & \\
+            \midrule
+            H1 & has longer records & median chars: 6,160 vs.\ 3,230 & $<0.001$ & \tcok\ Confirmed \\
+            H2 & mentions the literal disease term less often & 69.4\% vs.\ 89.4\% & $<0.001$ & \tcok\ Confirmed \\
+            H3 & has more visits & median visits: 2 vs.\ 2 & 0.211 & \tcno\ Refuted \\
+            H4 & more often lacks the canonical entity in the index & 46.6\% vs.\ 45.7\% & 0.887 & \tcno\ Refuted \\
             \bottomrule
         \end{tabular}
         \vskip6pt
-        \textbf{Drift false positive, most others correct} ($n_A=291$ vs.\ $n_B=3{,}144$)\par\vskip2pt
-        \begin{tabular}{lp{7.6cm}cc}
+        Evidence is indirect and spread over longer texts -- where \textit{drift}'s iterative search helps; static retrieval fails when the bridging evidence is missing \cite{guo2026}.
+    \end{frame}
+
+    \begin{frame}{Why Drift Fails Where Others Succeed}
+        \footnotesize
+        \textbf{Group A} ($n=291$): disease absent, \textit{drift} predicts it (false positive), most of S1--S4 are correct. \textbf{Group B} ($n=3{,}144$): disease absent and \textit{drift} also correct.\par\vskip4pt
+        \renewcommand{\arraystretch}{1.15}
+        \begin{tabular}{lp{4.1cm}p{3.6cm}cc}
             \toprule
-            H1 & Risk/hypothesis language in drift's justification: 13.4\% & -- & \tcweak\ Weak \\
-            H2 & Median characters: A = 4,307, B = 2,818 & $<0.001$ & \tcok\ Confirmed \\
-            H3 & Lower-GI terms in upper-GI-bleeding FPs: 8.7\% vs.\ 2.8\% & 0.040 & \tcok\ Confirmed \\
-            H4 & Cited evidence not verbatim in the record: 13.8\% & -- & \tcweak\ Weak \\
+            & \textbf{Hypothesis} & \textbf{Result} & $p$ & \\
+            \midrule
+            H1 & \textit{drift} justifies the FP with risk/hypothesis language & 13.4\% of group A & -- & \tcweak\ Weak \\
+            H2 & group A has longer records & median chars: 4,307 vs.\ 2,818 & $<0.001$ & \tcok\ Confirmed \\
+            H3 & upper-GI-bleeding FPs contain more lower-GI terms & 8.7\% vs.\ 2.8\% & 0.040 & \tcok\ Confirmed \\
+            H4 & evidence cited by \textit{drift} is not verbatim in the record & 13.8\% of citations & -- & \tcweak\ Weak \\
             \bottomrule
         \end{tabular}
         \vskip4pt
-        Iterative retrieval helps when bridging evidence is missing, but also surfaces spurious associations \cite{guo2026}.
+        {\scriptsize H1 and H4 have no comparison group; they count as relevant above 15\%.}\par\vskip4pt
+        Length helps both hits and false positives; iterative retrieval also surfaces spurious associations \cite{guo2026}.
     \end{frame}
 
     \begin{frame}{Text Length Amplifies Drift's Behaviour}
@@ -389,10 +404,19 @@ November 2026
                     \itemsep2pt
                     \item The same patient's entities fall into different Leiden communities; synonyms of a target disease can be separated from the canonical entity
                     \item Not an isolated case: median 38 entities and 81 relations per patient, spread over communities equal to 55\% of the entity count
-                    \item Causes: generic extraction prompts multiply entities \cite{ye2026}; Leiden is not reproducible on sparse graphs \cite{hossain2026}
+                    \item On sparse knowledge graphs, Leiden partitions are not reproducible and yield communities of very uneven size \cite{hossain2026}
                 \end{itemize}
             \end{column}
         \end{columns}
+    \end{frame}
+
+    \begin{frame}{The Six Largest Patient Subgraphs}
+        \begin{center}
+            \includegraphics[width=0.92\textwidth,height=0.74\textheight,keepaspectratio]{figures/largest_subgraphs.png}
+        \end{center}
+        \vskip-0.6em
+        {\centering\footnotesize Each patient's entities are spread over 45 to 63 level-1 communities: fragmentation is structural, not an isolated case.\par}
+        \figsource{patients E--J (pseudonyms); entities grouped by level-1 community, no entity labels}
     \end{frame}
 
     \begin{frame}{Qualitative Error Patterns (Drift)}
@@ -427,26 +451,37 @@ November 2026
         \begin{itemize}
             \item Systematic evaluation of GraphRAG on real Brazilian-Portuguese clinical records, with manually annotated ground truth
             \item A sample/ground-truth construction funnel for unevenly prevalent classes
-            \item Statistical characterization (Mann-Whitney, chi-square) of \textit{drift}'s success/failure mechanisms, confirming the GI-bleeding anatomical confusion
+            \item Statistical characterization of \textit{drift}'s success/failure mechanisms, confirming the GI-bleeding anatomical confusion
             \item A qualitative error taxonomy with concrete cases
             \item Reusable scripts/pipeline for the full evaluation, from sample screening to statistical and qualitative analysis
         \end{itemize}
     \end{frame}
 
-    \begin{frame}{Limitations \& Future Work}
+    \begin{frame}{Limitations}
+        \small
+        \begin{itemize}
+            \itemsep3pt
+            \item Spontaneous bacterial peritonitis: only 2 positive cases
+            \item Single annotator: inter-annotator agreement not measured
+            \item Non-random, screening-enriched sample -- and only LLM-confirmed candidates entered the expansion, so diseases the screening missed are under-represented and measured recall may be \textbf{overestimated}
+            \item No reliable results for \textit{global} mode (S5/S6): dynamic community selection made too many calls
+            \item A single Leiden partition, not reproducible on sparse graphs \cite{hossain2026}
+        \end{itemize}
+    \end{frame}
+
+    \begin{frame}{Future Work}
         \begin{columns}[c,totalwidth=0.95\textwidth]
-            \begin{column}{0.52\textwidth}
-                \small
+            \begin{column}{0.54\textwidth}
+                \footnotesize
                 \begin{itemize}
-                    \itemsep1pt
-                    \item Spontaneous bacterial peritonitis: only 2 positive cases
-                    \item Single annotator: inter-annotator agreement not measured
-                    \item Non-random, screening-enriched sample
-                    \item No reliable results for \textit{global} mode (S5/S6): dynamic community selection made too many calls
-                    \item A single Leiden partition, not reproducible on sparse graphs \cite{hossain2026}
+                    \itemsep2pt
+                    \item Reduce upper-GI-bleeding false positives (contrastive examples; larger or clinical LLMs)
+                    \item Evaluate \textit{global} mode without the excessive call volume
+                    \item Explicit rules for hepatitis B/C false positives (vaccine immunity vs.\ active infection)
+                    \item Grouping beyond pure topology: attributed communities \cite{wang2026archrag}, entity normalization to a clinical vocabulary \cite{wang2026}, patient-centred communities
+                    \item One patient entity per record \cite{ye2026}; deterministic $k$-core hierarchies \cite{hossain2026}
+                    \item A second annotator; replication in other institutions
                 \end{itemize}
-                \vskip0.2em
-                \footnotesize\textbf{Future work:} reduce GI-bleeding false positives (contrastive examples, larger or clinical LLMs); evaluate \textit{global} properly; rules for hepatitis B/C false positives; one patient entity per record \cite{ye2026}; deterministic $k$-core hierarchies \cite{hossain2026}; a second annotator; replication elsewhere.
             \end{column}
             \begin{column}{0.46\textwidth}
                 \centering

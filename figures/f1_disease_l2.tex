@@ -1,0 +1,30 @@
+% English version of Figure 5.2(b) of the thesis: level 2 (in-cell bars, best value outlined)
+\begin{tikzpicture}[x=1cm, y=1cm, font=\footnotesize]
+\def\X{3.10}\def\CW{3.05}\def\GX{0.22}\def\RH{0.44}\def\BH{0.27}
+\foreach \k/\tit/\c in {0/{S2 (\textit{basic})}/modoBasic, 1/{S4 (\textit{local})}/modoLocal, 2/{S8 (\textit{drift})}/modoDrift}{
+  \node[font=\footnotesize\bfseries, anchor=base, inner sep=1pt] at ({\X+\k*(\CW+\GX)+\CW/2},0.08) {\chip{\c}\tit};
+}
+\node[font=\footnotesize\bfseries, anchor=base, inner sep=1pt] at ({\X+3*(\CW+\GX)+0.62},0.08) {$\Delta$};
+\draw[black!45, line width=0.4pt] (-0.15,-0.08) -- ({\X+3*(\CW+\GX)+1.45},-0.08);
+\foreach \i/\nome/\a/\b/\d/\best/\delta in {
+    1/Cirrhosis/0.571/0.626/0.802/2/{\gain{23.1}},
+    2/Schistosomiasis/0.679/0.702/0.765/2/{\gain{8.6}},
+    3/Hepatitis C/0.740/0.806/0.867/2/{\gain{12.7}},
+    4/Hepatitis B/0.857/0.874/0.927/2/{\gain{7.0}},
+    5/Steatosis/0.854/0.872/0.950/2/{\gain{9.6}},
+    6/Portal hypertension/0.702/0.679/0.923/2/{\gain{22.1}},
+    7/{Upper GI bleeding}/0.444/0.386/0.486/2/{\gain{4.2}}}{
+  \pgfmathsetmacro{\y}{-0.08-\i*\RH+\RH/2}
+  \node[anchor=east, inner sep=0pt] at ({\X-0.10},\y) {\nome};
+  \foreach \k/\v/\c in {0/\a/modoBasic, 1/\b/modoLocal, 2/\d/modoDrift}{
+    \pgfmathsetmacro{\x}{\X+\k*(\CW+\GX)}
+    \fill[black!5] (\x,{\y+\BH/2}) rectangle ({\x+\CW},{\y-\BH/2});
+    \path[fill=\c, draw=white, line width=0.45pt] (\x,{\y+\BH/2}) rectangle ({\x+\CW*\v},{\y-\BH/2});
+    \ifnum\k=\best\draw[black!75, line width=0.7pt] (\x,{\y+\BH/2}) rectangle ({\x+\CW*\v},{\y-\BH/2});\fi
+    \node[anchor=east, inner sep=2pt, text=white, font=\scriptsize] at ({\x+\CW*\v},\y)
+      {\ifnum\k=\best\bfseries\fi\pgfmathprintnumber[fixed, precision=3, fixed zerofill]{\v}};
+  }
+  \node[anchor=west, inner sep=0pt, font=\scriptsize] at ({\X+3*(\CW+\GX)+0.10},\y) {\delta};
+}
+\draw[black!45, line width=0.4pt] (-0.15,{-0.08-7*\RH}) -- ({\X+3*(\CW+\GX)+1.45},{-0.08-7*\RH});
+\end{tikzpicture}
